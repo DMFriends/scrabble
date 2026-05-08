@@ -8,7 +8,7 @@ import java.util.Set;
 
 public class Main extends Application
 {
-	public static Set<String> dictionary = LoadTextFile.loadWords("sowpods.txt");
+	public static Set<String> dictionary = LoadTextFile.loadWords("dictionary.txt");
 	
 	@Override
 	public void start(Stage primaryStage)
