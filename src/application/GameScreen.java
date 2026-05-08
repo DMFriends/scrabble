@@ -1,7 +1,12 @@
 package application;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.imageio.ImageIO;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -9,7 +14,10 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
+import javafx.scene.image.PixelReader;
+import javafx.scene.image.WritableImage;
 import javafx.scene.layout.*;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 public class GameScreen
@@ -28,7 +36,7 @@ public class GameScreen
 		this.primaryStage = primaryStage;
 		this.gameState = gameState;
 		this.dragController = new DragController(gameState, this);
-		this.scene = new Scene(buildUI(), 900, 700);
+		this.scene = new Scene(buildUI(), 1000, 700);
 	}
 	
 	public Scene getScene()
@@ -69,8 +77,9 @@ public class GameScreen
 	    scoreboard = buildScoreBoard();
 	    HBox controls = buildControls();
 	    controls.setAlignment(Pos.CENTER);
+	    Button exportBoard = buildExportBoardButton();
 
-	    rightPanel.getChildren().addAll(scoreboard, controls);
+	    rightPanel.getChildren().addAll(scoreboard, controls, exportBoard);
 	    root.setRight(rightPanel);
 
 	    return root;
@@ -97,16 +106,17 @@ public class GameScreen
 		            		+ "border-width: 0.5;");
 		            case DOUBLE_WORD   -> cell.setStyle("-fx-background-color: pink; -fx-border-color: #999; -fx-"
 		            		+ "border-width: 0.5;");
-		            case TRIPLE_LETTER -> cell.setStyle("-fx-background-color: blue; -fx-border-color: #999; -fx-"
+		            case TRIPLE_LETTER -> cell.setStyle("-fx-background-color: #4444cc; -fx-border-color: #999; -fx-"
 		            		+ "border-width: 0.5;");
 		            case DOUBLE_LETTER -> cell.setStyle("-fx-background-color: lightblue; -fx-border-color: #999;"
 		            		+ "-fx-border-width: 0.5;");
-		            default -> cell.setStyle("-fx-background-color: beige; -fx-border-color: #999; -fx-border-width: 0.5;");
+		            default -> cell.setStyle("-fx-background-color: beige; -fx-border-color: #999; -fx-border-width: "
+		            		+ "0.5;");
 	            }
 	            
 	            if (row == 7 && col == 7)
 	            {
-	                Label star = new Label("★");
+	                Label star = new Label("\u2605");
 	                star.setStyle("-fx-font-size: 20px; -fx-text-fill: darkred;");
 	                cell.getChildren().add(star);
 	            }
@@ -173,14 +183,23 @@ public class GameScreen
 		Button recall = new Button("Recall");
 		Button pass = new Button("Pass");
 		Button swap = new Button("Swap");
+		Button endGame = new Button("End Game");
 		
 		submit.setOnAction(e -> {onSubmit();});
 		recall.setOnAction(e -> {onRecall();});
 		pass.setOnAction(e -> {onPass();});
 		swap.setOnAction(e -> onSwap());
+		endGame.setOnAction(e -> onEndGame());
 		
-		controls.getChildren().addAll(submit, recall, pass, swap);
+		controls.getChildren().addAll(submit, recall, pass, swap, endGame);
 		return controls;
+	}
+	
+	private Button buildExportBoardButton()
+	{
+		Button exportBoard = new Button("Export Board as PNG");
+		exportBoard.setOnAction(e -> onExportBoardPng());
+		return exportBoard;
 	}
 	
 	public void refreshRack()
@@ -231,17 +250,29 @@ public class GameScreen
 			{
 				StackPane cell = (StackPane) boardGrid.getChildren().get(row * 15 + col);
 				cell.getChildren().clear();
+				Position position = new Position(row, col);
 				Tile tile = gameState.getBoard().getTile(row, col);
+				boolean isTentative = false;
 				
 				if(tile == null)
 				{
-				    tile = gameState.getBoard().getTentativePlacements().get(new Position(row, col));
+				    tile = gameState.getBoard().getTentativePlacements().get(position);
+				    isTentative = tile != null;
 				}
 
 				if(tile != null)
 				{
 					Label tileLabel = new Label(tile.toString());
-					tileLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+					tileLabel.setPrefSize(45, 45);
+					tileLabel.setAlignment(Pos.CENTER);
+					String tileColor = isTentative ? "#b7f3ff" : "wheat";
+					tileLabel.setStyle("-fx-background-color: " + tileColor + "; -fx-border-color: black; "
+							+ "-fx-font-size: 18px; -fx-font-weight: bold; "
+							+ "-fx-effect: dropshadow(gaussian, white, 2, 0.5, 0, 0);");
+					if(isTentative)
+					{
+						tileLabel.setOnMouseClicked(event -> recallTentativeTile(position));
+					}
 					cell.getChildren().add(tileLabel);
 				}
 				else if(row == 7 && col == 7)
@@ -251,6 +282,16 @@ public class GameScreen
 					cell.getChildren().add(star);
 				}
 			}
+		}
+	}
+	
+	private void recallTentativeTile(Position position)
+	{
+		if(gameState.recallTile(position))
+		{
+		    refreshRack();
+		    refreshBoard();
+		    refreshStatus();
 		}
 	}
 	
@@ -297,12 +338,80 @@ public class GameScreen
 		gameState.recallTiles();
 		gameState.getCurrentPlayer().drawTiles(gameState.getTileBag());
 	    gameState.nextTurn(false);
+	    if(gameState.isGameOver())
+	    {
+	    	switchToEndScreen();
+	    	return;
+	    }
+	    
 	    refreshStatus();
 	    refreshRack();
 	    refreshScoreBoard();
 	    refreshBoard();
 	}
 	
+	private void onEndGame()
+	{
+		gameState.recallTiles();
+		gameState.endGame();
+		switchToEndScreen();
+	}
+	
+	private void onExportBoardPng()
+	{
+		FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Export Board as PNG");
+		fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG Files", "*.png"));
+		fileChooser.setInitialFileName("scrabble_board.png");
+		
+		File file = fileChooser.showSaveDialog(primaryStage);
+		if(file == null)
+		{
+			return;
+		}
+		
+		file = ensurePngExtension(file);
+		WritableImage image = boardGrid.snapshot(null, null);
+		
+		try
+		{
+			ImageIO.write(toBufferedImage(image), "png", file);
+		}
+		catch(IOException e)
+		{
+			Alert alert = new Alert(Alert.AlertType.ERROR, "Could not export the board image.");
+			alert.showAndWait();
+		}
+	}
+	
+	private BufferedImage toBufferedImage(WritableImage image)
+	{
+		int width = (int) image.getWidth();
+		int height = (int) image.getHeight();
+		BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		PixelReader pixelReader = image.getPixelReader();
+		
+		for(int y = 0; y < height; y++)
+		{
+			for(int x = 0; x < width; x++)
+			{
+				bufferedImage.setRGB(x, y, pixelReader.getArgb(x, y));
+			}
+		}
+		
+		return bufferedImage;
+	}
+	
+	private File ensurePngExtension(File file)
+	{
+		if(file.getName().toLowerCase().endsWith(".png"))
+		{
+			return file;
+		}
+		
+		return new File(file.getParentFile(), file.getName() + ".png");
+	}
+
 	private void onSwap()
 	{
 		List<Tile> currentTiles = gameState.getCurrentPlayer().getRack().getTiles();
@@ -340,6 +449,12 @@ public class GameScreen
 				if (!tilesToSwap.isEmpty())
 				{
 					gameState.swapTiles(tilesToSwap);
+					if(gameState.isGameOver())
+					{
+						switchToEndScreen();
+						return;
+					}
+					
 					refreshStatus();
 					refreshRack();
 					refreshScoreBoard();

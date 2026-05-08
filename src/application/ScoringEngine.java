@@ -23,6 +23,28 @@ public class ScoringEngine
 
 	private int scoreWord(Map<Position, Tile> placements)
 	{
+		if(placements.size() == 1)
+		{
+			Position pos = placements.keySet().iterator().next();
+			int horizontalLength = wordLengthAlongLine(pos.row(), pos.col(), true, placements);
+			int verticalLength = wordLengthAlongLine(pos.row(), pos.col(), false, placements);
+			
+			if(horizontalLength > 1 && verticalLength > 1)
+			{
+				return scoreWordAlongLine(pos.row(), pos.col(), true, placements)
+						+ scoreWordAlongLine(pos.row(), pos.col(), false, placements);
+			}
+			if(horizontalLength > 1)
+			{
+				return scoreWordAlongLine(pos.row(), pos.col(), true, placements);
+			}
+			if(verticalLength > 1)
+			{
+				return scoreWordAlongLine(pos.row(), pos.col(), false, placements);
+			}
+			return 0;
+		}
+		
 		MoveValidator.Direction d = MoveValidator.getDirection(placements);
 		if (d == MoveValidator.Direction.INVALID) return 0;
 		Position start = placements.keySet().iterator().next();
@@ -83,6 +105,11 @@ public class ScoringEngine
 
 	private int scoreCrossWords(Map<Position, Tile> placements)
 	{
+		if(placements.size() == 1)
+		{
+			return 0;
+		}
+		
 		MoveValidator.Direction d = MoveValidator.getDirection(placements);
 		if (d == MoveValidator.Direction.INVALID) return 0;
 

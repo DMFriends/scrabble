@@ -3,6 +3,7 @@ package application;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -40,7 +41,7 @@ public class EndScreen
 	    Label title = new Label("Game Over!");
 	    title.setStyle("-fx-font-size: 48px; -fx-font-weight: bold;");
 
-	    Label winner = new Label(gameState.getWinner().getName() + " wins!");
+	    Label winner = new Label(getWinnerText());
 	    winner.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: green;");
 
 	    VBox scoreList = buildScoreList();
@@ -56,6 +57,39 @@ public class EndScreen
 
 	    root.getChildren().addAll(title, winner, scoreList, buttons);
 	    return root;
+	}
+	
+	private String getWinnerText()
+	{
+		List<Player> winners = gameState.getWinners();
+		
+		if(winners.size() == 1)
+		{
+			return winners.get(0).getName() + " wins!";
+		}
+		
+		return "Tie between " + getPlayerNames(winners) + "!";
+	}
+	
+	private String getPlayerNames(List<Player> players)
+	{
+		if(players.size() == 2)
+		{
+			return players.get(0).getName() + " & " + players.get(1).getName();
+		}
+		
+		StringBuilder names = new StringBuilder();
+		
+		for(int i = 0; i < players.size(); i++)
+		{
+			if(i > 0)
+			{
+				names.append(", ");
+			}
+			names.append(players.get(i).getName());
+		}
+		
+		return names.toString();
 	}
 	
 	private void onExportCSV()
@@ -86,12 +120,23 @@ public class EndScreen
 	private VBox buildScoreList()
 	{
 		VBox scoreList = new VBox();
+		List<Player> winners = gameState.getWinners();
 		
 		for(Player p : gameState.getPlayers())
 		{
 			Label playerScore = new Label(p.getName() + ": " + p.getScore());
+			if(winners.size() == 1 && p == winners.get(0))
+			{
+				playerScore.setStyle("-fx-font-size: 28px; -fx-font-weight: bold;");
+			}
+			else
+			{
+				playerScore.setStyle("-fx-font-size: 28px;");
+			}
 			scoreList.getChildren().add(playerScore);
 		}
+		
+		scoreList.setAlignment(Pos.CENTER);
 		
 		return scoreList;
 	}

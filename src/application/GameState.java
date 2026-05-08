@@ -99,6 +99,11 @@ public class GameState
 		return ((tileBag.isEmpty() && playerHasEmptyRack) || consecutivePasses >= players.size() * 2);
 	}
 	
+	public void endGame()
+	{
+		phase = GamePhase.FINISHED;
+	}
+	
 	public Player getWinner()
 	{
 		Player winner = players.get(0);
@@ -114,6 +119,30 @@ public class GameState
 		}
 		
 		return winner;
+	}
+	
+	public List<Player> getWinners()
+	{
+		List<Player> winners = new ArrayList<>();
+		int currentHigh = players.get(0).getScore();
+		
+		for(Player p : players)
+		{
+			if(p.getScore() > currentHigh)
+			{
+				currentHigh = p.getScore();
+			}
+		}
+		
+		for(Player p : players)
+		{
+			if(p.getScore() == currentHigh)
+			{
+				winners.add(p);
+			}
+		}
+		
+		return winners;
 	}
 	
 	public void swapTiles(List<Tile> tiles)
@@ -170,6 +199,18 @@ public class GameState
 			getCurrentPlayer().getRack().returnTile(t);
 		}
 		board.recallTiles();
+	}
+	
+	public boolean recallTile(Position position)
+	{
+		Tile tile = board.recallTile(position);
+		if(tile == null)
+		{
+			return false;
+		}
+		
+		getCurrentPlayer().getRack().returnTile(tile);
+		return true;
 	}
 
 	public TileBag getTileBag()

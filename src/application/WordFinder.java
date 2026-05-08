@@ -11,30 +11,45 @@ public class WordFinder
 	public static List<String> getFormedWords(Map<Position, Tile> placements, Board board, Direction direction)
 	{
 		List<String> words = new ArrayList<>();
-		//Direction direction = isStraightLine(placements);
+		
+		if(placements.size() == 1)
+		{
+			Position pos = placements.keySet().iterator().next();
+			addWordIfLongEnough(words, collectWord(pos.row(), pos.col(), true, placements, board));
+			addWordIfLongEnough(words, collectWord(pos.row(), pos.col(), false, placements, board));
+			words.removeIf(word -> word.length() <= 1);
+			return words;
+		}
 		
 		if(direction == Direction.HORIZONTAL)
 		{
 			Position start = placements.keySet().iterator().next();
-			words.add(collectWord(start.row(), start.col(), true, placements, board));
+			addWordIfLongEnough(words, collectWord(start.row(), start.col(), true, placements, board));
 
 			for (Position pos : placements.keySet()) {
-			    String cross = collectWord(pos.row(), pos.col(), false, placements, board);
-			    if (cross.length() > 1) words.add(cross);
+			    addWordIfLongEnough(words, collectWord(pos.row(), pos.col(), false, placements, board));
 			}
 		}
 		else if(direction == Direction.VERTICAL)
 		{
 			Position start = placements.keySet().iterator().next();
-			words.add(collectWord(start.row(), start.col(), false, placements, board));
+			addWordIfLongEnough(words, collectWord(start.row(), start.col(), false, placements, board));
 
 			for (Position pos : placements.keySet()) {
-			    String cross = collectWord(pos.row(), pos.col(), true, placements, board);
-			    if (cross.length() > 1) words.add(cross);
+			    addWordIfLongEnough(words, collectWord(pos.row(), pos.col(), true, placements, board));
 			}
 		}
 		
+		words.removeIf(word -> word.length() <= 1);
 		return words;
+	}
+	
+	private static void addWordIfLongEnough(List<String> words, String word)
+	{
+		if(word.length() > 1 && !words.contains(word))
+		{
+			words.add(word);
+		}
 	}
 
 	private static String collectWord(int row, int col, boolean horizontal, Map<Position, Tile> placements, Board board)

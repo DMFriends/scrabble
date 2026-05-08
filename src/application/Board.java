@@ -74,6 +74,11 @@ public class Board
 		tentativePlacements.clear();
 	}
 	
+	public Tile recallTile(Position position)
+	{
+		return tentativePlacements.remove(position);
+	}
+	
 	public Tile getTile(int row, int col)
 	{
 	    if (row < 0 || row >= 15 || col < 0 || col >= 15) {

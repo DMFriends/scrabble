@@ -145,8 +145,16 @@ public class MoveValidator
 	
 	private boolean allWordsValid(Map<Position, Tile> placements)
 	{
-		for (String word : WordFinder.getFormedWords(placements, board, getDirection(placements)))
+		List<String> formedWords = WordFinder.getFormedWords(placements, board, getDirection(placements));
+		//System.out.println("Formed words: " + formedWords);
+		
+		for (String word : formedWords)
 		{
+			if (word.length() <= 1)
+			{
+				continue;
+			}
+			
 			if (!gameState.isValidWord(word))
 			{
 				errorMessage = "\"" + word + "\" is not in the dictionary.";
