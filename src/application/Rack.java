@@ -16,20 +16,9 @@ public class Rack
 	
 	public void drawFromBag(TileBag bag)
 	{
-		int numTilesNeeded = 7 - tiles.size();
+		int numTilesNeeded = MAX_TILES - tiles.size();
 		List<Tile> tilesToAdd = bag.drawTiles(numTilesNeeded);
-		
-		for(int i = 0; i < tilesToAdd.size(); i++)
-		{
-			if(tiles.get(i) != null)
-			{
-				tiles.add(tilesToAdd.get(i));
-			}
-			else
-			{
-				break;
-			}
-		}
+		tiles.addAll(tilesToAdd);
 	}
 	
 	public boolean removeTile(Tile t)

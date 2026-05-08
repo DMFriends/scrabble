@@ -1,6 +1,7 @@
 package application;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,9 +48,13 @@ public class Board
 			board[pos[0]][pos[1]] = new Cell(PremiumType.DOUBLE_LETTER);
 	}
 	
-	public void placeTile(int row, int col, Tile t)
+	public boolean placeTile(int row, int col, Tile t)
 	{
-		tentativePlacements.put(new Position(row, col), t);
+	    if (board[row][col].isOccupied() || tentativePlacements.containsKey(new Position(row, col))) {
+	        return false;
+	    }
+	    tentativePlacements.put(new Position(row, col), t);
+	    return true;
 	}
 	
 	public void commitMove()
@@ -77,10 +82,15 @@ public class Board
 	    
 	    return board[row][col].getTile();
 	}
+
+	public PremiumType getPremiumType(int row, int col)
+	{
+		return board[row][col].getPremiumType();
+	}
 	
 	public boolean isOccupied(int row, int col)
 	{
-		return board[row][col] == null;
+		return board[row][col].isOccupied();
 	}
 	
 	public boolean isCenter(int row, int col)
@@ -104,5 +114,10 @@ public class Board
 		}
 	    
 	    return adjacent;
+	}
+	
+	public Map<Position, Tile> getTentativePlacements()
+	{
+		return Collections.unmodifiableMap(tentativePlacements);
 	}
 }

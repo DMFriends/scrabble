@@ -13,7 +13,7 @@ public class Cell
 	
 	public void placeTile(Tile t)
 	{
-		if(currentTile != null) currentTile = t;
+		if(currentTile == null) currentTile = t;
 	}
 	
 	public Tile getTile()
@@ -28,6 +28,6 @@ public class Cell
 	
 	public boolean isOccupied()
 	{
-		return currentTile == null;
+		return currentTile != null;
 	}
 }

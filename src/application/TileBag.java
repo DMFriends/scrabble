@@ -12,14 +12,22 @@ public class TileBag
 	{
 		List<String[]> letters = LoadTextFile.loadCSV("letters.csv");
 		
+		if (letters == null)
+		{
+			System.err.println("Failed to load letters.csv");
+			return;
+		}
+		
 		for(String[] line : letters)
 		{
-			for(int i = 0; i < Integer.parseInt(line[2]); i++)
+			for(int i = 0; i < Integer.parseInt(line[1]); i++)
 			{
-				allTiles.add(new Tile(line[0].charAt(0), 
-						Integer.parseInt(line[1]), line[0].charAt(0) != '0'));
+				if (line[0].charAt(0) == '0') allTiles.add(new BlankTile());
+				else allTiles.add(new Tile(line[0].charAt(0), Integer.parseInt(line[2]), false));
 			}
 		}
+		
+		shuffle();
 	}
 	
 	public void shuffle()
@@ -29,7 +37,8 @@ public class TileBag
 	
 	public Tile drawTile()
 	{
-		return allTiles.remove(allTiles.size() - 1); // returns null if bag is empty
+		if (allTiles.isEmpty()) return null;
+		return allTiles.remove(allTiles.size() - 1);
 	}
 	
 	public List<Tile> drawTiles(int n)
@@ -38,7 +47,9 @@ public class TileBag
 		
 		for(int i = 0; i < n; i++)
 		{
-			tiles.add(drawTile());
+			Tile t = drawTile();
+	        if (t == null) break;
+	        tiles.add(t);
 		}
 		
 		return tiles;
