@@ -10,7 +10,7 @@ public class TileBag
 	
 	public TileBag()
 	{
-		List<String[]> letters = LoadTextFile.loadCSV("letters.csv");
+		List<String[]> letters = LoadTextFile.loadCSV("/resources/letters.csv");
 		
 		if (letters == null)
 		{
