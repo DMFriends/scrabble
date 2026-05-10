@@ -30,13 +30,14 @@ public class GameScreen
 	private HBox rackBox;
 	private VBox scoreboard;
 	private Label statusLabel;
+	private static final int TILE_SIZE = 45;
 	
 	public GameScreen(Stage primaryStage, GameState gameState)
 	{
 		this.primaryStage = primaryStage;
 		this.gameState = gameState;
 		this.dragController = new DragController(gameState, this);
-		this.scene = new Scene(buildUI(), 1000, 700);
+		this.scene = new Scene(buildUI(), 1000, 800);
 	}
 	
 	public Scene getScene()
@@ -95,7 +96,9 @@ public class GameScreen
 			for(int col = 0; col < 15; col++)
 			{
 				StackPane cell = new StackPane();
-				cell.setPrefSize(45, 45);
+				cell.setPrefSize(TILE_SIZE, TILE_SIZE);
+				cell.setMinSize(TILE_SIZE, TILE_SIZE);
+				cell.setMaxSize(TILE_SIZE, TILE_SIZE);
 				
 				dragController.enableBoardCell(cell, row, col);
 				
@@ -136,15 +139,11 @@ public class GameScreen
 
 		for(Tile t : gameState.getCurrentPlayer().getRack().getTiles())
 		{
-			Label tileLabel = new Label(t.toString());
-			tileLabel.setPrefSize(45, 45);
-			tileLabel.setAlignment(Pos.CENTER);
-			tileLabel.setStyle("-fx-background-color: wheat; -fx-border-color: black; "
-					+ "-fx-font-size: 18px; -fx-font-weight: bold;");
+			StackPane tileView = buildTileView(t, "wheat");
 			
-			dragController.enableRackTile(tileLabel, t);
+			dragController.enableRackTile(tileView, t);
 			
-			rack.getChildren().add(tileLabel);
+			rack.getChildren().add(tileView);
 		}
 
 		rackBox = rack;
@@ -207,15 +206,11 @@ public class GameScreen
 		rackBox.getChildren().clear();
 		for(Tile t : gameState.getCurrentPlayer().getRack().getTiles())
 		{
-			Label tileLabel = new Label(t.toString());
-			tileLabel.setPrefSize(45, 45);
-			tileLabel.setAlignment(Pos.CENTER);
-			tileLabel.setStyle("-fx-background-color: wheat; -fx-border-color: black; "
-					+ "-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: black;");
+			StackPane tileView = buildTileView(t, "wheat");
 			
-			dragController.enableRackTile(tileLabel, t);
+			dragController.enableRackTile(tileView, t);
 			
-			rackBox.getChildren().add(tileLabel);
+			rackBox.getChildren().add(tileView);
 		}
 	}
 	
@@ -262,17 +257,13 @@ public class GameScreen
 
 				if(tile != null)
 				{
-					Label tileLabel = new Label(tile.toString());
-					tileLabel.setPrefSize(45, 45);
-					tileLabel.setAlignment(Pos.CENTER);
 					String tileColor = isTentative ? "#b7f3ff" : "wheat";
-					tileLabel.setStyle("-fx-background-color: " + tileColor + "; -fx-border-color: black; "
-							+ "-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: black;");
+					StackPane tileView = buildTileView(tile, tileColor);
 					if(isTentative)
 					{
-						tileLabel.setOnMouseClicked(_ -> recallTentativeTile(position));
+						tileView.setOnMouseClicked(_ -> recallTentativeTile(position));
 					}
-					cell.getChildren().add(tileLabel);
+					cell.getChildren().add(tileView);
 				}
 				else if(row == 7 && col == 7)
 				{
@@ -282,6 +273,27 @@ public class GameScreen
 				}
 			}
 		}
+	}
+
+	private StackPane buildTileView(Tile tile, String backgroundColor)
+	{
+		StackPane tileView = new StackPane();
+		tileView.setPrefSize(TILE_SIZE, TILE_SIZE);
+		tileView.setMinSize(TILE_SIZE, TILE_SIZE);
+		tileView.setMaxSize(TILE_SIZE, TILE_SIZE);
+		tileView.setStyle("-fx-background-color: " + backgroundColor + "; -fx-border-color: black;");
+
+		Label letter = new Label(tile.toString().toUpperCase());
+		letter.setAlignment(Pos.CENTER);
+		letter.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: black;");
+
+		Label points = new Label(String.valueOf(tile.getPointValue()));
+		points.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: black;");
+		StackPane.setAlignment(points, Pos.BOTTOM_RIGHT);
+		StackPane.setMargin(points, new Insets(0, 4, 3, 0));
+
+		tileView.getChildren().addAll(letter, points);
+		return tileView;
 	}
 	
 	private void recallTentativeTile(Position position)

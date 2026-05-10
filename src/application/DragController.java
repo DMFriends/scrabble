@@ -11,7 +11,7 @@ public class DragController
 	private GameState gameState;
 	private GameScreen gameScreen;
 	private Tile draggedTile;
-	private Label dragSource;
+	private StackPane dragSource;
 	
 	public DragController(GameState gameState, GameScreen gameScreen)
 	{
@@ -21,12 +21,12 @@ public class DragController
 		this.dragSource = null;
 	}
 	
-	public void enableRackTile(Label label, Tile tile)
+	public void enableRackTile(StackPane tileView, Tile tile)
 	{
-		label.setOnDragDetected(event -> onDragDetected(event, label, tile));
-		label.setOnDragDone(event -> onDragDone(event));
-		label.setOnMouseEntered(_ -> onMouseEntered(label));
-		label.setOnMouseExited(_ -> onMouseExited(label));
+		tileView.setOnDragDetected(event -> onDragDetected(event, tileView, tile));
+		tileView.setOnDragDone(event -> onDragDone(event));
+		tileView.setOnMouseEntered(_ -> onMouseEntered(tileView));
+		tileView.setOnMouseExited(_ -> onMouseExited(tileView));
 	}
 	
 	public void enableBoardCell(StackPane c, int row, int col)
@@ -35,12 +35,12 @@ public class DragController
 		c.setOnDragDropped(event -> onDragDropped(event, row, col));
 	}
 	
-	private void onDragDetected(MouseEvent event, Label label, Tile tile)
+	private void onDragDetected(MouseEvent event, StackPane tileView, Tile tile)
 	{
 		draggedTile = tile;
-		dragSource = label;
+		dragSource = tileView;
 
-		Dragboard db = label.startDragAndDrop(TransferMode.MOVE);
+		Dragboard db = tileView.startDragAndDrop(TransferMode.MOVE);
 		ClipboardContent content = new ClipboardContent();
 		content.putString(tile.toString());
 		db.setContent(content);
@@ -75,16 +75,19 @@ public class DragController
 		event.consume();
 	}
 	
-	private void onMouseEntered(Label label)
+	private void onMouseEntered(StackPane tileView)
 	{
-		label.setStyle("-fx-background-color: goldenrod; -fx-border-color: black; "
-				+ "-fx-font-size: 18px; -fx-font-weight: bold;");
+		tileView.setStyle(getTileStyle("goldenrod"));
 	}
 
-	private void onMouseExited(Label label)
+	private void onMouseExited(StackPane tileView)
 	{
-		label.setStyle("-fx-background-color: wheat; -fx-border-color: black; "
-				+ "-fx-font-size: 18px; -fx-font-weight: bold;");
+		tileView.setStyle(getTileStyle("wheat"));
+	}
+
+	private String getTileStyle(String backgroundColor)
+	{
+		return "-fx-background-color: " + backgroundColor + "; -fx-border-color: black;";
 	}
 
 	private char promptBlankLetter()
