@@ -52,13 +52,11 @@ unzip -q "$JMODS_ZIP" -d "$BUILD_DIR/javafx/jmods"
 JAVAFX_SDK_DIR="$(find "$BUILD_DIR/javafx/sdk" -maxdepth 1 -type d -name 'javafx-sdk-*' | head -n 1)"
 JAVAFX_JMODS_DIR="$(find "$BUILD_DIR/javafx/jmods" -maxdepth 1 -type d -name 'javafx-jmods-*' | head -n 1)"
 
-mapfile -t JAVA_SOURCES < <(find src/application -name '*.java' | sort)
-
 javac \
   --module-path "$JAVAFX_SDK_DIR/lib" \
   --add-modules javafx.controls \
   -d "$BUILD_DIR/classes" \
-  "${JAVA_SOURCES[@]}"
+  $(find src/application -name '*.java' | sort)
 
 cp -R src/resources "$BUILD_DIR/classes/resources"
 
