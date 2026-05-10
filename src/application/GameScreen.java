@@ -161,11 +161,11 @@ public class GameScreen
 		{
 			Label playerLabel = new Label(p.getName() + ": " + p.getScore());
 			
-			playerLabel.setStyle("-fx-font-size: 18px;");
+			playerLabel.setStyle("-fx-font-size: 18px; -fx-text-fill: black;");
 			
 			if(p == gameState.getCurrentPlayer())
 			{
-			    playerLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+			    playerLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: black;");
 			}
 						
 			scoreboard.getChildren().add(playerLabel);
@@ -211,7 +211,7 @@ public class GameScreen
 			tileLabel.setPrefSize(45, 45);
 			tileLabel.setAlignment(Pos.CENTER);
 			tileLabel.setStyle("-fx-background-color: wheat; -fx-border-color: black; "
-					+ "-fx-font-size: 18px; -fx-font-weight: bold;");
+					+ "-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: black;");
 			
 			dragController.enableRackTile(tileLabel, t);
 			
@@ -226,18 +226,18 @@ public class GameScreen
 		{
 			Label playerLabel = new Label(p.getName() + ": " + p.getScore());
 			
-			playerLabel.setStyle("-fx-font-size: 18px;");
+			playerLabel.setStyle("-fx-font-size: 18px; -fx-text-fill: black;");
 			
 			if(p == gameState.getCurrentPlayer())
 			{
-			    playerLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
+			    playerLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: black;");
 			}
 						
 			scoreboard.getChildren().add(playerLabel);
 		}
 	}
 	
-	private void refreshStatus()
+	public void refreshStatus()
 	{
 	    statusLabel.setText(gameState.getCurrentPlayer().getName() + "'s turn");
 	}
@@ -267,8 +267,7 @@ public class GameScreen
 					tileLabel.setAlignment(Pos.CENTER);
 					String tileColor = isTentative ? "#b7f3ff" : "wheat";
 					tileLabel.setStyle("-fx-background-color: " + tileColor + "; -fx-border-color: black; "
-							+ "-fx-font-size: 18px; -fx-font-weight: bold; "
-							+ "-fx-effect: dropshadow(gaussian, white, 2, 0.5, 0, 0);");
+							+ "-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: black;");
 					if(isTentative)
 					{
 						tileLabel.setOnMouseClicked(_ -> recallTentativeTile(position));
@@ -305,24 +304,25 @@ public class GameScreen
 	private void onSubmit()
 	{
 		boolean success = gameState.commitMove();
-		if(success)
+		if (success)
 		{
 			if (gameState.isGameOver())
 			{
 				switchToEndScreen();
-			    return;
+				return;
 			}
-			
 			refreshStatus();
+			refreshRack();
+			refreshScoreBoard();
+			refreshBoard();
+			switchToBuffer();
 		}
 		else
 		{
 			statusLabel.setText(gameState.getLastMoveError());
+			refreshRack();
+			refreshBoard();
 		}
-
-	    refreshRack();
-	    refreshScoreBoard();
-	    refreshBoard();
 	}
 	
 	private void onRecall()
@@ -344,10 +344,7 @@ public class GameScreen
 	    	return;
 	    }
 	    
-	    refreshStatus();
-	    refreshRack();
-	    refreshScoreBoard();
-	    refreshBoard();
+	    switchToBuffer();
 	}
 	
 	private void onEndGame()
@@ -355,6 +352,13 @@ public class GameScreen
 		gameState.recallTiles();
 		gameState.endGame();
 		switchToEndScreen();
+	}
+	
+	private void switchToBuffer()
+	{
+	    primaryStage.setMaximized(false);
+	    BufferScreen buffer = new BufferScreen(primaryStage, gameState, this);
+	    primaryStage.setScene(buffer.getScene());
 	}
 	
 	private void onExportBoardPng()
