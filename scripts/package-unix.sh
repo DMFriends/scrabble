@@ -6,6 +6,7 @@ MAIN_CLASS="application.Main"
 JAVAFX_VERSION="${JAVAFX_VERSION:-21.0.2}"
 PACKAGE_TYPE="${PACKAGE_TYPE:-}"
 VERSION="${APP_VERSION:-1.0}"
+ENABLE_PREVIEW="${ENABLE_PREVIEW:-false}"
 
 VERSION="${VERSION#v}"
 BUILD_DIR="build"
@@ -52,7 +53,16 @@ unzip -q "$JMODS_ZIP" -d "$BUILD_DIR/javafx/jmods"
 JAVAFX_SDK_DIR="$(find "$BUILD_DIR/javafx/sdk" -maxdepth 1 -type d -name 'javafx-sdk-*' | head -n 1)"
 JAVAFX_JMODS_DIR="$(find "$BUILD_DIR/javafx/jmods" -maxdepth 1 -type d -name 'javafx-jmods-*' | head -n 1)"
 
+JAVAC_PREVIEW_ARGS=()
+JPACKAGE_PREVIEW_ARGS=()
+if [[ "$ENABLE_PREVIEW" == "true" || "$ENABLE_PREVIEW" == "1" ]]; then
+  JAVA_RELEASE="$(java -XshowSettings:properties -version 2>&1 | sed -n 's/^[[:space:]]*java.specification.version = //p' | head -n 1)"
+  JAVAC_PREVIEW_ARGS=(--enable-preview --release "$JAVA_RELEASE")
+  JPACKAGE_PREVIEW_ARGS=(--java-options --enable-preview)
+fi
+
 javac \
+  "${JAVAC_PREVIEW_ARGS[@]}" \
   --module-path "$JAVAFX_SDK_DIR/lib" \
   --add-modules javafx.controls \
   -d "$BUILD_DIR/classes" \
@@ -98,6 +108,7 @@ JPACKAGE_ARGS=(
   --dest dist
   --module-path "$JAVAFX_JMODS_DIR"
   --add-modules java.desktop,javafx.controls
+  "${JPACKAGE_PREVIEW_ARGS[@]}"
   "${ICON_ARGS[@]}"
 )
 
