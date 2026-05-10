@@ -10,7 +10,7 @@ import java.util.Set;
 
 public class Main extends Application
 {
-	public static final String APP_VERSION = "v1.1";
+	public static final String APP_VERSION = "v1.0";
 	public static Set<String> dictionary = LoadTextFile.loadWords("/resources/dictionary.txt");
 	
 	@Override

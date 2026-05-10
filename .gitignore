@@ -1,5 +1,7 @@
 /bin/
+/build/
 /dist/
+/release/
 .classpath
 .project
 *.class
