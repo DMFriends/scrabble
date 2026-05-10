@@ -31,6 +31,12 @@ public class GameScreen
 	private VBox scoreboard;
 	private Label statusLabel;
 	private static final int TILE_SIZE = 45;
+	private static final String NORMAL_COLOR = "beige";
+	private static final String DOUBLE_LETTER_COLOR = "lightblue";
+	private static final String TRIPLE_LETTER_COLOR = "#4444cc";
+	private static final String DOUBLE_WORD_COLOR = "pink";
+	private static final String TRIPLE_WORD_COLOR = "red";
+	private static final String TENTATIVE_TILE_COLOR = "#b7f3ff";
 	
 	public GameScreen(Stage primaryStage, GameState gameState)
 	{
@@ -76,11 +82,12 @@ public class GameScreen
 	    rightPanel.setAlignment(Pos.TOP_CENTER);
 
 	    scoreboard = buildScoreBoard();
+	    VBox legend = buildLegend();
 	    HBox controls = buildControls();
 	    controls.setAlignment(Pos.CENTER);
 	    Button exportBoard = buildExportBoardButton();
 
-	    rightPanel.getChildren().addAll(scoreboard, controls, exportBoard);
+	    rightPanel.getChildren().addAll(scoreboard, legend, controls, exportBoard);
 	    root.setRight(rightPanel);
 
 	    return root;
@@ -103,19 +110,7 @@ public class GameScreen
 				dragController.enableBoardCell(cell, row, col);
 				
 				PremiumType premium = gameState.getBoard().getPremiumType(row, col);
-	            switch (premium)
-	            {
-		            case TRIPLE_WORD   -> cell.setStyle("-fx-background-color: red; -fx-border-color: #999; -fx-"
-		            		+ "border-width: 0.5;");
-		            case DOUBLE_WORD   -> cell.setStyle("-fx-background-color: pink; -fx-border-color: #999; -fx-"
-		            		+ "border-width: 0.5;");
-		            case TRIPLE_LETTER -> cell.setStyle("-fx-background-color: #4444cc; -fx-border-color: #999; -fx-"
-		            		+ "border-width: 0.5;");
-		            case DOUBLE_LETTER -> cell.setStyle("-fx-background-color: lightblue; -fx-border-color: #999;"
-		            		+ "-fx-border-width: 0.5;");
-		            default -> cell.setStyle("-fx-background-color: beige; -fx-border-color: #999; -fx-border-width: "
-		            		+ "0.5;");
-	            }
+				cell.setStyle(getBoardCellStyle(premium));
 	            
 	            if (row == 7 && col == 7)
 	            {
@@ -172,6 +167,63 @@ public class GameScreen
 		
 		this.scoreboard = scoreboard;
 		return scoreboard;
+	}
+
+	private VBox buildLegend()
+	{
+		VBox legend = new VBox(6);
+		legend.setAlignment(Pos.TOP_LEFT);
+		legend.setPadding(new Insets(10));
+		legend.setStyle("-fx-border-color: #999; -fx-background-color: white;");
+
+		Label title = new Label("Legend");
+		title.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: black;");
+		legend.getChildren().add(title);
+
+		legend.getChildren().add(buildLegendItem(PremiumType.TRIPLE_WORD, "Triple Word"));
+		legend.getChildren().add(buildLegendItem(PremiumType.DOUBLE_WORD, "Double Word"));
+		legend.getChildren().add(buildLegendItem(PremiumType.TRIPLE_LETTER, "Triple Letter"));
+		legend.getChildren().add(buildLegendItem(PremiumType.DOUBLE_LETTER, "Double Letter"));
+		legend.getChildren().add(buildLegendItem(PremiumType.NORMAL, "Normal"));
+		legend.getChildren().add(buildLegendItem(TENTATIVE_TILE_COLOR, "Tentative Tile"));
+
+		return legend;
+	}
+
+	private HBox buildLegendItem(PremiumType premium, String labelText)
+	{
+		HBox item = new HBox(8);
+		item.setAlignment(Pos.CENTER_LEFT);
+
+		StackPane swatch = new StackPane();
+		swatch.setPrefSize(18, 18);
+		swatch.setMinSize(18, 18);
+		swatch.setMaxSize(18, 18);
+		swatch.setStyle(getBoardCellStyle(premium));
+
+		Label label = new Label(labelText);
+		label.setStyle("-fx-font-size: 13px; -fx-text-fill: black;");
+
+		item.getChildren().addAll(swatch, label);
+		return item;
+	}
+
+	private HBox buildLegendItem(String color, String labelText)
+	{
+		HBox item = new HBox(8);
+		item.setAlignment(Pos.CENTER_LEFT);
+
+		StackPane swatch = new StackPane();
+		swatch.setPrefSize(18, 18);
+		swatch.setMinSize(18, 18);
+		swatch.setMaxSize(18, 18);
+		swatch.setStyle("-fx-background-color: " + color + "; -fx-border-color: #999; -fx-border-width: 0.5;");
+
+		Label label = new Label(labelText);
+		label.setStyle("-fx-font-size: 13px; -fx-text-fill: black;");
+
+		item.getChildren().addAll(swatch, label);
+		return item;
 	}
 	
 	private HBox buildControls()
@@ -257,7 +309,8 @@ public class GameScreen
 
 				if(tile != null)
 				{
-					String tileColor = isTentative ? "#b7f3ff" : "wheat";
+					PremiumType premium = gameState.getBoard().getPremiumType(row, col);
+					String tileColor = getBoardTileColor(premium, isTentative);
 					StackPane tileView = buildTileView(tile, tileColor);
 					if(isTentative)
 					{
@@ -282,18 +335,57 @@ public class GameScreen
 		tileView.setMinSize(TILE_SIZE, TILE_SIZE);
 		tileView.setMaxSize(TILE_SIZE, TILE_SIZE);
 		tileView.setStyle("-fx-background-color: " + backgroundColor + "; -fx-border-color: black;");
+		String textColor = getTileTextColor(backgroundColor);
 
 		Label letter = new Label(tile.toString().toUpperCase());
 		letter.setAlignment(Pos.CENTER);
-		letter.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: black;");
+		letter.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: " + textColor + ";");
 
 		Label points = new Label(String.valueOf(tile.getPointValue()));
-		points.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: black;");
+		points.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: " + textColor + ";");
 		StackPane.setAlignment(points, Pos.BOTTOM_RIGHT);
 		StackPane.setMargin(points, new Insets(0, 4, 3, 0));
 
 		tileView.getChildren().addAll(letter, points);
 		return tileView;
+	}
+
+	private String getBoardTileColor(PremiumType premium, boolean isTentative)
+	{
+		if(!isTentative)
+		{
+			return "wheat";
+		}
+
+		if(premium != PremiumType.NORMAL)
+		{
+			return getPremiumColor(premium);
+		}
+
+		return TENTATIVE_TILE_COLOR;
+	}
+
+	private String getBoardCellStyle(PremiumType premium)
+	{
+		return "-fx-background-color: " + getPremiumColor(premium) + "; -fx-border-color: #999; "
+				+ "-fx-border-width: 0.5;";
+	}
+
+	private String getPremiumColor(PremiumType premium)
+	{
+		return switch(premium)
+		{
+			case TRIPLE_WORD -> TRIPLE_WORD_COLOR;
+			case DOUBLE_WORD -> DOUBLE_WORD_COLOR;
+			case TRIPLE_LETTER -> TRIPLE_LETTER_COLOR;
+			case DOUBLE_LETTER -> DOUBLE_LETTER_COLOR;
+			default -> NORMAL_COLOR;
+		};
+	}
+
+	private String getTileTextColor(String backgroundColor)
+	{
+		return TRIPLE_LETTER_COLOR.equals(backgroundColor) ? "white" : "black";
 	}
 	
 	private void recallTentativeTile(Position position)
