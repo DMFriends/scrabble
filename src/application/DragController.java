@@ -25,8 +25,8 @@ public class DragController
 	{
 		label.setOnDragDetected(event -> onDragDetected(event, label, tile));
 		label.setOnDragDone(event -> onDragDone(event));
-		label.setOnMouseEntered(event -> onMouseEntered(label));
-		label.setOnMouseExited(event -> onMouseExited(label));
+		label.setOnMouseEntered(_ -> onMouseEntered(label));
+		label.setOnMouseExited(_ -> onMouseExited(label));
 	}
 	
 	public void enableBoardCell(StackPane c, int row, int col)

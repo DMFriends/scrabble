@@ -185,11 +185,11 @@ public class GameScreen
 		Button swap = new Button("Swap");
 		Button endGame = new Button("End Game");
 		
-		submit.setOnAction(e -> {onSubmit();});
-		recall.setOnAction(e -> {onRecall();});
-		pass.setOnAction(e -> {onPass();});
-		swap.setOnAction(e -> onSwap());
-		endGame.setOnAction(e -> onEndGame());
+		submit.setOnAction(_ -> onSubmit());
+		recall.setOnAction(_ -> onRecall());
+		pass.setOnAction(_ -> onPass());
+		swap.setOnAction(_ -> onSwap());
+		endGame.setOnAction(_ -> onEndGame());
 		
 		controls.getChildren().addAll(submit, recall, pass, swap, endGame);
 		return controls;
@@ -198,7 +198,7 @@ public class GameScreen
 	private Button buildExportBoardButton()
 	{
 		Button exportBoard = new Button("Export Board as PNG");
-		exportBoard.setOnAction(e -> onExportBoardPng());
+		exportBoard.setOnAction(_ -> onExportBoardPng());
 		return exportBoard;
 	}
 	
@@ -271,7 +271,7 @@ public class GameScreen
 							+ "-fx-effect: dropshadow(gaussian, white, 2, 0.5, 0, 0);");
 					if(isTentative)
 					{
-						tileLabel.setOnMouseClicked(event -> recallTentativeTile(position));
+						tileLabel.setOnMouseClicked(_ -> recallTentativeTile(position));
 					}
 					cell.getChildren().add(tileLabel);
 				}

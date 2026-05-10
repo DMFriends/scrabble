@@ -49,10 +49,10 @@ public class StartScreen
 	    VBox nameFieldsBox = new VBox(10);
 	    buildNameFields(2, nameFieldsBox);
 
-	    playerCountBox.setOnAction(e -> buildNameFields(playerCountBox.getValue(), nameFieldsBox));
+	    playerCountBox.setOnAction(_ -> buildNameFields(playerCountBox.getValue(), nameFieldsBox));
 
 	    Button startButton = new Button("Start Game");
-	    startButton.setOnAction(e -> onStartClicked());
+	    startButton.setOnAction(_ -> onStartClicked());
 
 	    root.getChildren().addAll(title, playerCountLabel, playerCountBox, nameFieldsBox, startButton);
 	    return root;
@@ -80,7 +80,7 @@ public class StartScreen
 		{
 			String name = nameFields.get(i).getText().trim();
 			if (name.isEmpty()) name = "Player " + (i + 1);
-			players.add(new Player(name, i + 1));
+			players.add(new Player(name));
 		}
 	    
 	    switchToGame(players);

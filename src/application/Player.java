@@ -3,15 +3,13 @@ package application;
 public class Player
 {
 	private String name;
-	private int playerID;
 	private Rack rack;
 	private int score;
 	private boolean isTurn;
 	
-	public Player(String name, int playerID)
+	public Player(String name)
 	{
 		this.name = name;
-		this.playerID = playerID;
 		this.rack = new Rack();
 		this.score = 0;
 		this.isTurn = false;
@@ -25,11 +23,6 @@ public class Player
 	public int getScore()
 	{
 		return score;
-	}
-	
-	public int getPlayerID()
-	{
-		return playerID;
 	}
 	
 	public String getName()

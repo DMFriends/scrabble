@@ -47,10 +47,10 @@ public class EndScreen
 	    VBox scoreList = buildScoreList();
 
 	    Button playAgain = new Button("Play Again");
-	    playAgain.setOnAction(e -> onPlayAgain());
+	    playAgain.setOnAction(_ -> onPlayAgain());
 
 	    Button exportCSV = new Button("Export Scores");
-	    exportCSV.setOnAction(e -> onExportCSV());
+	    exportCSV.setOnAction(_ -> onExportCSV());
 
 	    HBox buttons = new HBox(10, playAgain, exportCSV);
 	    buttons.setAlignment(Pos.CENTER);
