@@ -42,7 +42,7 @@ public class EndScreen
 	    title.setStyle("-fx-font-size: 48px; -fx-font-weight: bold;");
 
 	    Label winner = new Label(getWinnerText());
-	    winner.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: green;");
+	    winner.setStyle("-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: " + getWinnerTextColor() + ";");
 
 	    VBox scoreList = buildScoreList();
 
@@ -52,7 +52,10 @@ public class EndScreen
 	    Button exportCSV = new Button("Export Scores");
 	    exportCSV.setOnAction(_ -> onExportCSV());
 
-	    HBox buttons = new HBox(10, playAgain, exportCSV);
+	    Button exit = new Button("Exit");
+	    exit.setOnAction(_ -> onExit());
+
+	    HBox buttons = new HBox(10, playAgain, exportCSV, exit);
 	    buttons.setAlignment(Pos.CENTER);
 
 	    root.getChildren().addAll(title, winner, scoreList, buttons);
@@ -68,28 +71,12 @@ public class EndScreen
 			return winners.get(0).getName() + " wins!";
 		}
 		
-		return "Tie between " + getPlayerNames(winners) + "!";
+		return "The game ended in a tie.";
 	}
 	
-	private String getPlayerNames(List<Player> players)
+	private String getWinnerTextColor()
 	{
-		if(players.size() == 2)
-		{
-			return players.get(0).getName() + " & " + players.get(1).getName();
-		}
-		
-		StringBuilder names = new StringBuilder();
-		
-		for(int i = 0; i < players.size(); i++)
-		{
-			if(i > 0)
-			{
-				names.append(", ");
-			}
-			names.append(players.get(i).getName());
-		}
-		
-		return names.toString();
+		return gameState.getWinners().size() == 1 ? "green" : "black";
 	}
 	
 	private void onExportCSV()
@@ -145,5 +132,10 @@ public class EndScreen
 	{
 		StartScreen startScreen = new StartScreen(primaryStage);
 	    primaryStage.setScene(startScreen.getScene());
+	}
+
+	private void onExit()
+	{
+		primaryStage.close();
 	}
 }
