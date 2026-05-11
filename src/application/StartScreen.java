@@ -90,7 +90,8 @@ public class StartScreen
 	{
 		GameState gameState = new GameState(players, Main.dictionary);
 	    GameScreen gameScreen = new GameScreen(primaryStage, gameState);
-	    primaryStage.setScene(gameScreen.getScene());
+	    BufferScreen buffer = new BufferScreen(primaryStage, gameState, gameScreen);
+	    primaryStage.setScene(buffer.getScene());
 		primaryStage.setResizable(false);
 	}
 }
