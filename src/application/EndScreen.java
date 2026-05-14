@@ -7,11 +7,13 @@ import java.util.List;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 public class EndScreen
@@ -30,6 +32,14 @@ public class EndScreen
 	public Scene getScene()
 	{
 		return scene;
+	}
+	
+	public void centerOnScreen()
+	{
+		primaryStage.sizeToScene();
+		Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+		primaryStage.setX(screenBounds.getMinX() + (screenBounds.getWidth() - primaryStage.getWidth()) / 2);
+		primaryStage.setY(screenBounds.getMinY() + (screenBounds.getHeight() - primaryStage.getHeight()) / 2);
 	}
 	
 	private Parent buildUI()

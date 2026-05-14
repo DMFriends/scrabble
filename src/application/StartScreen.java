@@ -92,6 +92,7 @@ public class StartScreen
 	    GameScreen gameScreen = new GameScreen(primaryStage, gameState);
 	    BufferScreen buffer = new BufferScreen(primaryStage, gameState, gameScreen);
 	    primaryStage.setScene(buffer.getScene());
+	    buffer.centerOnScreen();
 		primaryStage.setResizable(false);
 	}
 }

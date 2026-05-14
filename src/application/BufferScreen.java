@@ -2,11 +2,13 @@ package application;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 public class BufferScreen
@@ -27,6 +29,14 @@ public class BufferScreen
 	public Scene getScene()
 	{
 		return scene;
+	}
+	
+	public void centerOnScreen()
+	{
+		primaryStage.sizeToScene();
+		Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+		primaryStage.setX(screenBounds.getMinX() + (screenBounds.getWidth() - primaryStage.getWidth()) / 2);
+		primaryStage.setY(screenBounds.getMinY() + (screenBounds.getHeight() - primaryStage.getHeight()) / 2);
 	}
 
 	private Parent buildUI()
@@ -52,8 +62,9 @@ public class BufferScreen
 		    gameScreen.refreshScoreBoard();
 		    gameScreen.refreshBoard();
 		    gameScreen.refreshStatus();
-		    primaryStage.setScene(gameScreen.getScene());
 		    primaryStage.setMaximized(false);
+		    primaryStage.setScene(gameScreen.getScene());
+		    gameScreen.centerOnScreen();
 		});
 
 		root.getChildren().addAll(handOffLabel, playerName, instruction, startTurn);

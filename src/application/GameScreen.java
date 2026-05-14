@@ -8,16 +8,19 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import javafx.application.Platform;
+import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 public class GameScreen
@@ -28,6 +31,7 @@ public class GameScreen
 	private Scene scene;
 	private GridPane boardGrid;
 	private HBox rackBox;
+	private VBox rightPanel;
 	private VBox scoreboard;
 	private Label statusLabel;
 	private static final int TILE_SIZE = 45;
@@ -77,7 +81,7 @@ public class GameScreen
 
 	    root.setCenter(centerBox);
 	    
-	    VBox rightPanel = new VBox(20);
+	    rightPanel = new VBox(20);
 	    rightPanel.setPadding(new Insets(10));
 	    rightPanel.setAlignment(Pos.TOP_CENTER);
 
@@ -403,6 +407,7 @@ public class GameScreen
 		primaryStage.setMaximized(false);
 	    EndScreen endScreen = new EndScreen(primaryStage, gameState);
 	    primaryStage.setScene(endScreen.getScene());
+	    endScreen.centerOnScreen();
 	}
 	
 	private void onSubmit()
@@ -463,6 +468,7 @@ public class GameScreen
 	    primaryStage.setMaximized(false);
 	    BufferScreen buffer = new BufferScreen(primaryStage, gameState, this);
 	    primaryStage.setScene(buffer.getScene());
+	    buffer.centerOnScreen();
 	}
 	
 	private void onExportBoardPng()
@@ -522,13 +528,25 @@ public class GameScreen
 
 	private void onSwap()
 	{
-		List<Tile> currentTiles = gameState.getCurrentPlayer().getRack().getTiles();
+		List<Tile> currentTiles = getCurrentTurnTiles();
 
 		VBox checkboxes = new VBox(5);
 		List<CheckBox> boxes = new ArrayList<>();
+		CheckBox selectAll = new CheckBox("Select All");
+		checkboxes.getChildren().add(selectAll);
+		selectAll.setOnAction(_ ->
+		{
+			boolean selected = selectAll.isSelected();
+			for(CheckBox box : boxes)
+			{
+				box.setSelected(selected);
+			}
+		});
+		
 		for (Tile t : currentTiles)
 		{
 			CheckBox cb = new CheckBox(String.valueOf(t.getLetter()));
+			cb.selectedProperty().addListener((_, _, _) -> selectAll.setSelected(!boxes.isEmpty() && boxes.stream().allMatch(CheckBox::isSelected)));
 			boxes.add(cb);
 			checkboxes.getChildren().add(cb);
 		}
@@ -536,11 +554,17 @@ public class GameScreen
 		Dialog<ButtonType> dialog = new Dialog<>();
 		dialog.setTitle("Swap Tiles");
 		dialog.setHeaderText("Select tiles to swap:");
+		dialog.initOwner(primaryStage);
 		dialog.getDialogPane().setContent(checkboxes);
 		dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 		
 		Stage dialogStage = (Stage) dialog.getDialogPane().getScene().getWindow();
-		dialogStage.getIcons().add(new Image("assets/scrabble.png"));
+		dialogStage.getIcons().setAll(primaryStage.getIcons());
+		dialog.setOnShown(_ ->
+		{
+			positionSwapDialog(dialog);
+			Platform.runLater(() -> positionSwapDialog(dialog));
+		});
 
 		dialog.showAndWait().ifPresent(result ->
 		{
@@ -556,6 +580,7 @@ public class GameScreen
 				}
 				if (!tilesToSwap.isEmpty())
 				{
+					gameState.recallTiles();
 					gameState.swapTiles(tilesToSwap);
 					if(gameState.isGameOver())
 					{
@@ -563,12 +588,52 @@ public class GameScreen
 						return;
 					}
 					
-					refreshStatus();
-					refreshRack();
-					refreshScoreBoard();
-					refreshBoard();
+					switchToBuffer();
 				}
 			}
 		});
+	}
+	
+	private List<Tile> getCurrentTurnTiles()
+	{
+		List<Tile> tiles = new ArrayList<>(gameState.getBoard().getTentativePlacements().values());
+		tiles.addAll(gameState.getCurrentPlayer().getRack().getTiles());
+		return tiles;
+	}
+	
+	private void positionSwapDialog(Dialog<?> dialog)
+	{
+		double dialogWidth = dialog.getWidth();
+		double dialogHeight = dialog.getHeight();
+		Bounds panelBounds = null;
+		if(rightPanel != null && rightPanel.getScene() != null)
+		{
+			panelBounds = rightPanel.localToScreen(rightPanel.getBoundsInLocal());
+		}
+		
+		double x = primaryStage.getX() + primaryStage.getWidth() - dialogWidth - 45;
+		if(panelBounds != null)
+		{
+			x = panelBounds.getMinX() + (panelBounds.getWidth() - dialogWidth) / 2;
+		}
+		double y = primaryStage.getY() + 190;
+		double stageLeft = primaryStage.getX();
+		double stageTop = primaryStage.getY();
+		double stageRight = stageLeft + primaryStage.getWidth();
+		double stageBottom = stageTop + primaryStage.getHeight();
+		
+		x = Math.max(stageLeft + 10, Math.min(x, stageRight - dialogWidth - 10));
+		y = Math.max(stageTop + 20, Math.min(y, stageBottom - dialogHeight - 20));
+		
+		dialog.setX(x);
+		dialog.setY(y);
+	}
+	
+	public void centerOnScreen()
+	{
+		primaryStage.sizeToScene();
+		Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+		primaryStage.setX(screenBounds.getMinX() + (screenBounds.getWidth() - primaryStage.getWidth()) / 2);
+		primaryStage.setY(screenBounds.getMinY() + (screenBounds.getHeight() - primaryStage.getHeight()) / 2);
 	}
 }
