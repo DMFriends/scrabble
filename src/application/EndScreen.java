@@ -3,6 +3,8 @@ package application;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import javafx.geometry.Insets;
@@ -21,6 +23,7 @@ public class EndScreen
 	private Stage primaryStage;
 	private GameState gameState;
 	private Scene scene;
+	private static final DateTimeFormatter EXPORT_DATE_FORMAT = DateTimeFormatter.ISO_LOCAL_DATE;
 	
 	public EndScreen(Stage primaryStage, GameState gameState)
 	{
@@ -94,7 +97,7 @@ public class EndScreen
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Save Scores");
 		fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
-		fileChooser.setInitialFileName("scrabble_scores.csv");
+		fileChooser.setInitialFileName("scrabble_scores_" + LocalDate.now().format(EXPORT_DATE_FORMAT) + ".csv");
 
 		File file = fileChooser.showSaveDialog(primaryStage);
 		if (file != null)

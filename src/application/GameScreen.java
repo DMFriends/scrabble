@@ -3,6 +3,8 @@ package application;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +43,7 @@ public class GameScreen
 	private static final String DOUBLE_WORD_COLOR = "pink";
 	private static final String TRIPLE_WORD_COLOR = "red";
 	private static final String TENTATIVE_TILE_COLOR = "#b7f3ff";
+	private static final DateTimeFormatter EXPORT_DATE_FORMAT = DateTimeFormatter.ISO_LOCAL_DATE;
 	
 	public GameScreen(Stage primaryStage, GameState gameState)
 	{
@@ -477,7 +480,7 @@ public class GameScreen
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Export Board as PNG");
 		fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG Files", "*.png"));
-		fileChooser.setInitialFileName("scrabble_board.png");
+		fileChooser.setInitialFileName("scrabble_board_" + LocalDate.now().format(EXPORT_DATE_FORMAT) + ".png");
 		
 		File file = fileChooser.showSaveDialog(primaryStage);
 		if(file == null)
