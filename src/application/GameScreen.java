@@ -318,6 +318,7 @@ public class GameScreen
 					StackPane tileView = buildTileView(tile, tileColor);
 					if(isTentative)
 					{
+						dragController.enableTentativeBoardTile(tileView, tile, position);
 						tileView.setOnMouseClicked(_ -> recallTentativeTile(position));
 					}
 					cell.getChildren().add(tileView);

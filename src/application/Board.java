@@ -78,6 +78,28 @@ public class Board
 	{
 		return tentativePlacements.remove(position);
 	}
+
+	public boolean moveTentativeTile(Position from, Position to)
+	{
+		if(from.equals(to))
+		{
+			return tentativePlacements.containsKey(from);
+		}
+
+		if(board[to.row()][to.col()].isOccupied() || tentativePlacements.containsKey(to))
+		{
+			return false;
+		}
+
+		Tile tile = tentativePlacements.remove(from);
+		if(tile == null)
+		{
+			return false;
+		}
+
+		tentativePlacements.put(to, tile);
+		return true;
+	}
 	
 	public Tile getTile(int row, int col)
 	{

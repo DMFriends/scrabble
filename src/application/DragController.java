@@ -12,6 +12,7 @@ public class DragController
 	private GameScreen gameScreen;
 	private Tile draggedTile;
 	private StackPane dragSource;
+	private Position draggedFromBoardPosition;
 	
 	public DragController(GameState gameState, GameScreen gameScreen)
 	{
@@ -19,14 +20,21 @@ public class DragController
 		this.gameScreen = gameScreen;
 		this.draggedTile = null;
 		this.dragSource = null;
+		this.draggedFromBoardPosition = null;
 	}
 	
 	public void enableRackTile(StackPane tileView, Tile tile)
 	{
-		tileView.setOnDragDetected(event -> onDragDetected(event, tileView, tile));
+		tileView.setOnDragDetected(event -> onDragDetected(event, tileView, tile, null));
 		tileView.setOnDragDone(event -> onDragDone(event));
 		tileView.setOnMouseEntered(_ -> onMouseEntered(tileView));
 		tileView.setOnMouseExited(_ -> onMouseExited(tileView));
+	}
+
+	public void enableTentativeBoardTile(StackPane tileView, Tile tile, Position position)
+	{
+		tileView.setOnDragDetected(event -> onDragDetected(event, tileView, tile, position));
+		tileView.setOnDragDone(event -> onDragDone(event));
 	}
 	
 	public void enableBoardCell(StackPane c, int row, int col)
@@ -35,10 +43,11 @@ public class DragController
 		c.setOnDragDropped(event -> onDragDropped(event, row, col));
 	}
 	
-	private void onDragDetected(MouseEvent event, StackPane tileView, Tile tile)
+	private void onDragDetected(MouseEvent event, StackPane tileView, Tile tile, Position boardPosition)
 	{
 		draggedTile = tile;
 		dragSource = tileView;
+		draggedFromBoardPosition = boardPosition;
 
 		Dragboard db = tileView.startDragAndDrop(TransferMode.MOVE);
 		ClipboardContent content = new ClipboardContent();
@@ -66,12 +75,13 @@ public class DragController
 
 	private void onDragDone(DragEvent event)
 	{
-		if (event.getTransferMode() == TransferMode.MOVE)
+		if (event.getTransferMode() == TransferMode.MOVE && draggedFromBoardPosition == null)
 		{
 			dragSource.setVisible(false);
 		}
 		draggedTile = null;
 		dragSource = null;
+		draggedFromBoardPosition = null;
 		event.consume();
 	}
 	
@@ -110,13 +120,29 @@ public class DragController
 
 	private boolean handleDrop(int row, int col, Tile tile)
 	{
+		if(tile == null)
+		{
+			return false;
+		}
+
+		boolean success;
+		if(draggedFromBoardPosition != null)
+		{
+			success = gameState.moveTentativeTile(draggedFromBoardPosition, new Position(row, col));
+			if(success)
+			{
+				gameScreen.refreshBoard();
+			}
+			return success;
+		}
+
 		if (tile instanceof BlankTile blank && !blank.isAssigned())
 		{
 			char letter = promptBlankLetter();
 			blank.setAssignedLetter(letter);
 		}
 
-		boolean success = gameState.placeTile(row, col, tile);
+		success = gameState.placeTile(row, col, tile);
 		if (success)
 		{
 			gameScreen.refreshRack();

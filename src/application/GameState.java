@@ -213,6 +213,11 @@ public class GameState
 		return true;
 	}
 
+	public boolean moveTentativeTile(Position from, Position to)
+	{
+		return phase == GamePhase.PLAYING && board.moveTentativeTile(from, to);
+	}
+
 	public TileBag getTileBag()
 	{
 		return tileBag;
