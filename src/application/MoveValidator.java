@@ -1,6 +1,8 @@
 package application;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class MoveValidator
@@ -32,6 +34,12 @@ public class MoveValidator
 		if(direction == Direction.INVALID)
 		{
 			errorMessage = "Tiles must be placed in one row or one column.";
+			return false;
+		}
+
+		if(!hasContiguousMainWord(placements, direction))
+		{
+			errorMessage = "Tiles must form one continuous word without empty gaps.";
 			return false;
 		}
 		
@@ -116,6 +124,51 @@ public class MoveValidator
 		if(allColsSame) return Direction.VERTICAL;
 		else return Direction.INVALID;
 	}
+
+	private boolean hasContiguousMainWord(Map<Position, Tile> placements, Direction direction)
+	{
+		if(placements.size() == 1)
+		{
+			return true;
+		}
+
+		int fixed = -1;
+		int min = 15;
+		int max = -1;
+
+		for(Position pos : placements.keySet())
+		{
+			int moving;
+			if(direction == Direction.HORIZONTAL)
+			{
+				fixed = pos.row();
+				moving = pos.col();
+			}
+			else if(direction == Direction.VERTICAL)
+			{
+				fixed = pos.col();
+				moving = pos.row();
+			}
+			else
+			{
+				return false;
+			}
+
+			if(moving < min) min = moving;
+			if(moving > max) max = moving;
+		}
+
+		for(int i = min; i <= max; i++)
+		{
+			Position pos = direction == Direction.HORIZONTAL ? new Position(fixed, i) : new Position(i, fixed);
+			if(!placements.containsKey(pos) && !board.isOccupied(pos.row(), pos.col()))
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
 	
 	private boolean isConnected(Map<Position, Tile> placements)
 	{
@@ -145,10 +198,39 @@ public class MoveValidator
 	
 	private boolean allWordsValid(Map<Position, Tile> placements)
 	{
-		List<String> formedWords = WordFinder.getFormedWords(placements, board, getDirection(placements));
-		//System.out.println("Formed words: " + formedWords);
+		Direction direction = getDirection(placements);
+		if(placements.size() == 1)
+		{
+			return validateWords(WordFinder.getFormedWords(placements, board, direction));
+		}
+
+		List<String> invalidCrossWords = getInvalidWords(WordFinder.getCrossWords(placements, board, direction));
+		if(!invalidCrossWords.isEmpty())
+		{
+			setInvalidWordsError(invalidCrossWords);
+			return false;
+		}
+
+		return validateWords(WordFinder.getMainWords(placements, board, direction));
+	}
+
+	private boolean validateWords(List<String> words)
+	{
+		List<String> invalidWords = getInvalidWords(words);
+		if(invalidWords.isEmpty())
+		{
+			return true;
+		}
+
+		setInvalidWordsError(invalidWords);
+		return false;
+	}
+
+	private List<String> getInvalidWords(List<String> words)
+	{
+		List<String> invalidWords = new ArrayList<>();
 		
-		for (String word : formedWords)
+		for (String word : words)
 		{
 			if (word.length() <= 1)
 			{
@@ -157,11 +239,23 @@ public class MoveValidator
 			
 			if (!gameState.isValidWord(word))
 			{
-				errorMessage = "\"" + word + "\" is not in the dictionary.";
-				return false;
+				invalidWords.add(word.toUpperCase(Locale.ROOT));
 			}
 		}
-		return true;
+
+		return invalidWords;
+	}
+
+	private void setInvalidWordsError(List<String> invalidWords)
+	{
+		if(invalidWords.size() == 1)
+		{
+			errorMessage = "\"" + invalidWords.get(0) + "\" is not in the dictionary.";
+		}
+		else
+		{
+			errorMessage = "\"" + String.join(", ", invalidWords) + "\" are not in the dictionary.";
+		}
 	}
 	
 	private boolean isFirstMove()

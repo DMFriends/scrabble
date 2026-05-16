@@ -23,24 +23,58 @@ public class WordFinder
 		
 		if(direction == Direction.HORIZONTAL)
 		{
-			Position start = placements.keySet().iterator().next();
-			addWordIfLongEnough(words, collectWord(start.row(), start.col(), true, placements, board));
+			words.addAll(getMainWords(placements, board, direction));
+			words.addAll(getCrossWords(placements, board, direction));
+		}
+		else if(direction == Direction.VERTICAL)
+		{
+			words.addAll(getMainWords(placements, board, direction));
+			words.addAll(getCrossWords(placements, board, direction));
+		}
+		
+		words.removeIf(word -> word.length() <= 1);
+		return words;
+	}
 
+	public static List<String> getMainWords(Map<Position, Tile> placements, Board board, Direction direction)
+	{
+		List<String> words = new ArrayList<>();
+
+		if(placements.isEmpty())
+		{
+			return words;
+		}
+
+		Position start = placements.keySet().iterator().next();
+		if(direction == Direction.HORIZONTAL)
+		{
+			addWordIfLongEnough(words, collectWord(start.row(), start.col(), true, placements, board));
+		}
+		else if(direction == Direction.VERTICAL)
+		{
+			addWordIfLongEnough(words, collectWord(start.row(), start.col(), false, placements, board));
+		}
+
+		return words;
+	}
+
+	public static List<String> getCrossWords(Map<Position, Tile> placements, Board board, Direction direction)
+	{
+		List<String> words = new ArrayList<>();
+
+		if(direction == Direction.HORIZONTAL)
+		{
 			for (Position pos : placements.keySet()) {
 			    addWordIfLongEnough(words, collectWord(pos.row(), pos.col(), false, placements, board));
 			}
 		}
 		else if(direction == Direction.VERTICAL)
 		{
-			Position start = placements.keySet().iterator().next();
-			addWordIfLongEnough(words, collectWord(start.row(), start.col(), false, placements, board));
-
 			for (Position pos : placements.keySet()) {
 			    addWordIfLongEnough(words, collectWord(pos.row(), pos.col(), true, placements, board));
 			}
 		}
-		
-		words.removeIf(word -> word.length() <= 1);
+
 		return words;
 	}
 	
